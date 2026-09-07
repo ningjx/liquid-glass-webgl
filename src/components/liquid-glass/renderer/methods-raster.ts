@@ -124,15 +124,19 @@ export const rasterMethods = {
   rasterizeText(this: LiquidGlassRenderer, cfg: GlassElementConfig) {
     if (!cfg.text) return
     const dpr = this.dpr
-    const w = Math.max(1, Math.round(cfg.rect.w * dpr))
-    const h = Math.max(1, Math.round(cfg.rect.h * dpr))
+    // 歌词会在景深动画中缩放，且用户可把字号调得很大。场景 DPR 为 1
+    // 时若仍以 1x Canvas 栅格化，文字纹理会在显示阶段被放大。单独给
+    // 文本使用 1.5x–2x 的采样密度，保持边缘清晰而不提高全屏 FBO 成本。
+    const textRasterScale = Math.min(2, Math.max(dpr, window.devicePixelRatio || 1, 1.5))
+    const w = Math.max(1, Math.round(cfg.rect.w * textRasterScale))
+    const h = Math.max(1, Math.round(cfg.rect.h * textRasterScale))
     if (this.fgCanvas.width !== w) this.fgCanvas.width = w
     if (this.fgCanvas.height !== h) this.fgCanvas.height = h
 
     const ctx = this.fgCtx
     ctx.setTransform(1, 0, 0, 1, 0, 0)
     ctx.clearRect(0, 0, w, h)
-    ctx.scale(dpr, dpr)
+    ctx.scale(textRasterScale, textRasterScale)
 
     const t = cfg.text
     const cssW = cfg.rect.w
