@@ -405,6 +405,15 @@ export interface CatalogState {
   // exposed as a slider so the user can tune the dye intensity independently
   // of the color-mix filter. Faithful to "加一个调染色强度的".
   textGlassGlassTintStrength: number
+  // TextGlass — tint saturation [0,1], default 1.0. The tint color is built
+  // via hsv2rgb(hue, S, V); previously S was hardcoded 1.0 (full saturation).
+  // Exposing it lets the user pick pastel/desaturated tint colors. 0 = gray
+  // (hue ignored), 1 = fully saturated.
+  textGlassGlassTintSaturation: number
+  // TextGlass — tint lightness/value [0,1], default 1.0. The V in hsv2rgb.
+  // Previously hardcoded 1.0. 0 = black, 0.5 = mid, 1 = full brightness.
+  // Combined with saturation, gives full HSL control over the tint color.
+  textGlassGlassTintLightness: number
   // TextGlass — "边缘哑光" (Edge matte) toggle. When true, the SDF edge band
   // (high `intensity`, near the text boundary) is desaturated toward luminance
   // AND slightly darkened — a frosted/matte rim. The effect fades smoothly
@@ -468,6 +477,18 @@ export interface CatalogState {
   // in page.tsx (NOT in the WebGL canvas) so it can use native HTML inputs
   // for crisper typography + accessibility.
   textGlassAdvanced: boolean
+  // TextGlass — "Gravity direction" toggle in the advanced panel. When true,
+  // the sheet card + toggle button read renderer.gravityAngle live each
+  // frame (el.useGravityAngle=true) so the rim highlight rotates with
+  // device orientation. Also enables the devicemotion listener on the
+  // TextGlass page. When false, the highlight angle is fixed at
+  // textGlassHighlightAngle (user-controlled via the slider below the toggle).
+  textGlassGravity: boolean
+  // TextGlass — custom highlight direction in DEGREES [0, 360], used only
+  // when textGlassGravity is false. Default 45 (matches the original
+  // DEFAULT_HIGHLIGHT.angle = 45° = 0.785 rad). Converted to radians and
+  // set on el.highlight.angle at build time.
+  textGlassHighlightAngle: number
 }
 
 export const DEFAULT_CATALOG_STATE: CatalogState = {
@@ -548,6 +569,8 @@ export const DEFAULT_CATALOG_STATE: CatalogState = {
   textGlassGlassTintEnabled: false,
   textGlassGlassTintMix: 0,
   textGlassGlassTintStrength: 0.85,
+  textGlassGlassTintSaturation: 1.0,
+  textGlassGlassTintLightness: 1.0,
   textGlassEdgeMatte: true,
   textGlassEdgeMatteTargets: 8,
   textGlassEdgeMatteBevelRange: 1,
@@ -565,6 +588,8 @@ export const DEFAULT_CATALOG_STATE: CatalogState = {
   textGlassBlurRadius: 0,
   textGlassRawSdf: false,
   textGlassAdvanced: false,
+  textGlassGravity: false,
+  textGlassHighlightAngle: 45,
 }
 
 /* ------------------------------------------------------------------ *
